@@ -1,0 +1,59 @@
+<!-- Glosentra UI Macros -->
+{% macro badge(text, type="primary") %}
+<span
+    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+    {% if type == 'primary' %}bg-primary/20 text-primary border border-primary/30{% endif %}
+    {% if type == 'secondary' %}bg-gray-500/20 text-gray-300 border border-gray-500/30{% endif %}
+    {% if type == 'success' %}bg-success/20 text-success border border-success/30{% endif %}
+    {% if type == 'warning' %}bg-warning/20 text-warning border border-warning/30{% endif %}
+    {% if type == 'info' %}bg-info/20 text-info border border-info/30{% endif %}
+    shadow-sm">
+    {{ text }}
+</span>
+{% endmacro %}
+
+{% macro button(text, href=None, type="primary", size="md", onclick=None) %}
+{% if href %}
+<a href="{{ href }}"
+    class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm transition-all duration-200 hover:scale-105
+    {% if type == 'primary' %}bg-gradient-to-r from-primary to-accent text-white hover:shadow-lg hover:shadow-primary/25{% endif %}
+    {% if type == 'secondary' %}bg-glass border-border text-text hover:bg-glass/80{% endif %}
+    {% if size == 'sm' %}px-3 py-1.5 text-xs{% endif %}
+    {% if size == 'lg' %}px-6 py-3 text-base{% endif %}">
+    {{ text }}
+</a>
+{% else %}
+<button {% if onclick %}onclick="{{ onclick }}" {% endif %}
+    class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm transition-all duration-200 hover:scale-105
+    {% if type == 'primary' %}bg-gradient-to-r from-primary to-accent text-white hover:shadow-lg hover:shadow-primary/25{% endif %}
+    {% if type == 'secondary' %}bg-glass border-border text-text hover:bg-glass/80{% endif %}
+    {% if size == 'sm' %}px-3 py-1.5 text-xs{% endif %}
+    {% if size == 'lg' %}px-6 py-3 text-base{% endif %}">
+    {{ text }}
+</button>
+{% endif %}
+{% endmacro %}
+
+{% macro card(title=None, class="") %}
+<div
+    class="bg-glass border border-border rounded-2xl p-6 shadow-lg backdrop-blur-xl {{ class }}">
+    {% if title %}
+    <h3 class="text-lg font-semibold text-text mb-4">{{ title }}</h3>
+    {% endif %}
+    {{ caller() }}
+</div>
+{% endmacro %}
+
+{% macro glass_card(title=None, class="") %}
+<div
+    class="bg-glass border border-border rounded-2xl p-6 shadow-lg backdrop-blur-xl relative overflow-hidden {{ class }}">
+    <div
+        class="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5"></div>
+    <div class="relative">
+        {% if title %}
+        <h3 class="text-lg font-semibold text-text mb-4">{{ title }}</h3>
+        {% endif %}
+        {{ caller() }}
+    </div>
+</div>
+{% endmacro %}

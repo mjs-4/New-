@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% from "_macros.html" import badge, button, glass_card %}
+
+{% block title %}Object Detection - Glosentra{% endblock %}
+
+{% block content %}
+<section class="py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-text mb-4">
+                Object Detection
+            </h1>
+            <p class="text-xl text-muted max-w-3xl mx-auto">
+                Detect and localize objects in your images with state-of-the-art
+                YOLO models.
+                Perfect for surveillance, autonomous vehicles, and content
+                analysis.
+            </p>
+            <div class="flex justify-center space-x-2 mt-6">
+                {{ badge("Real-time", "primary") }}
+                {{ badge("High Accuracy", "success") }}
+                {{ badge("80 Classes", "info") }}
+            </div>
+        </div>
+
+        <div class="grid lg:grid-cols-2 gap-8">
+            <!-- Upload Section -->
+            <div
+                class="bg-glass border border-border rounded-2xl p-6 shadow-lg backdrop-blur-xl relative overflow-hidden">
+                <div
+                    class="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5"></div>
+                <div class="relative">
+                    <h3 class="text-lg font-semibold text-text mb-4">Upload &
+                        Process</h3>
+                    <div id="dropzone"
+                        class="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-primary transition-colors cursor-pointer">
+                        <div class="space-y-4">
+                            <div
+                                class="w-16 h-16 bg-gradient-to-br from-primary/20 to-primary/40 rounded-full flex items-center justify-center mx-auto">
+                                <svg class="w-8 h-8 text-primary" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3
+                                    class="text-lg font-semibold text-text mb-2">Drop
+                                    your image here</h3>
+                                <p class="text-muted mb-4">or click to browse
+                                    files</p>
+                                <input type="file" id="fileInput"
+                                    accept="image/*"
+                                    class="hidden">
+                                <button
+                                    onclick="document.getElementById('fileInput').click()"
+                                    class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm transition-all duration-200 hover:scale-105 bg-gradient-to-r from-primary to-accent text-white hover:shadow-lg hover:shadow-primary/25">
+                                    Choose File
+                                </button>
+                            </div>
+                            <p class="text-sm text-muted">Supports JPG, PNG,
+                                WebP up to
+                                16MB</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <label class="text-sm font-medium text-text">Model
+                                Type</label>
+                            <select id="modelType"
+                                class="bg-glass border border-border rounded-lg px-3 py-2 text-text">
+                                <option value="detect">Object Detection</option>
+                                <option value="segment">Instance
+                                    Segmentation</option>
+                                <option value="classify">Image
+                                    Classification</option>
+                                <option value="pose">Pose Estimation</option>
+                            </select>
+                        </div>
+
+                        <button onclick="processImage()"
+                            class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-xl shadow-sm transition-all duration-200 hover:scale-105 bg-gradient-to-r from-primary to-accent text-white hover:shadow-lg hover:shadow-primary/25 w-full justify-center">
+                            Process Image
+                        </button>
+                    </div>
+
+                    <!-- Progress -->
+                    <div id="progress" class="hidden mt-4">
+                        <div class="flex items-center space-x-2">
+                            <div
+                                class="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                            <span class="text-sm text-text">Processing
+                                image...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div
+                class="bg-glass border border-border rounded-2xl p-6 shadow-lg backdrop-blur-xl relative overflow-hidden">
+                <div
+                    class="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5"></div>
+                <div class="relative">
+                    <h3
+                        class="text-lg font-semibold text-text mb-4">Results</h3>
+                    <div id="results" class="hidden">
+                        <!-- Image Preview with overlay canvas -->
+                        <div class="mb-6 relative">
+                            <img id="resultImage"
+                                class="w-full h-64 object-contain rounded-lg border border-border"
+                                alt="Result">
+                            <canvas id="overlayCanvas"
+                                class="absolute inset-0 w-full h-64 pointer-events-none"></canvas>
+                        </div>
+
+                        <!-- Metadata -->
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div
+                                class="bg-glass border border-border rounded-lg p-4">
+                                <div class="text-sm text-muted mb-1">Inference
+                                    Time</div>
+                                <div id="inferenceTime"
+                                    class="text-lg font-semibold text-text">--</div>
+                            </div>
+                            <div
+                                class="bg-glass border border-border rounded-lg p-4">
+                                <div class="text-sm text-muted mb-1">FPS</div>
+                                <div id="fps"
+                                    class="text-lg font-semibold text-text">--</div>
+                            </div>
+                        </div>
+
+                        <!-- Detections -->
+                        <div>
+                            <h4
+                                class="text-lg font-semibold text-text mb-4">Detected
+                                Objects</h4>
+                            <div id="detections" class="space-y-2">
+                                <!-- Detections will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="noResults" class="text-center py-12">
+                        <div
+                            class="w-16 h-16 bg-gradient-to-br from-muted/20 to-muted/40 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-muted" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-text mb-2">No
+                            Results
+                            Yet</h3>
+                        <p class="text-muted">Upload an image to see object
+                            detection
+                            results</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/process.js') }}"></script>
+<script>
+    // Initialize dropzone
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+    
+    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropzone.classList.add('border-primary', 'bg-primary/5');
+    });
+    dropzone.addEventListener('dragleave', () => {
+        dropzone.classList.remove('border-primary', 'bg-primary/5');
+    });
+    dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('border-primary', 'bg-primary/5');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFile(files[0]);
+        }
+    });
+    
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleFile(e.target.files[0]);
+        }
+    });
+    
+    function handleFile(file) {
+        if (!file.type.startsWith('image/')) {
+            alert('Please select an image file');
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = document.getElementById('resultImage');
+            img.src = e.target.result;
+            document.getElementById('results').classList.remove('hidden');
+            document.getElementById('noResults').classList.add('hidden');
+        };
+        reader.readAsDataURL(file);
+    }
+</script>
+{% endblock %}

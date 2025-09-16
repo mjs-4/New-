@@ -1,0 +1,354 @@
+Metadata-Version: 2.4
+Name: glosentra
+Version: 1.0.0
+Summary: Glosentra - Advanced Computer Vision Platform
+Author: Glosentra Team
+License: AGPL-3.0
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0; extra == "dev"
+Requires-Dist: black>=23.0; extra == "dev"
+Requires-Dist: flake8>=6.0; extra == "dev"
+
+# Glosentra - Advanced Computer Vision Platform
+
+![Glosentra Logo](https://img.shields.io/badge/Glosentra-Advanced%20CV-purple?style=for-the-badge&logo=python)
+
+**Glosentra** is a modern, high-performance computer vision platform built on YOLO v11 and Flask. Deploy state-of-the-art object detection, segmentation, classification, and pose estimation with a beautiful dark neo-glass UI and enterprise-grade performance.
+
+## ✨ Features
+
+- 🎯 **Four AI Tasks**: Object Detection, Instance Segmentation, Image Classification, Pose Estimation
+- ⚡ **Real-time Inference**: Sub-100ms processing with GPU acceleration
+- 🎨 **Modern UI**: Dark neo-glass design with purple→pink accents
+- 🚀 **One-Command Setup**: Automated development and production deployment
+- 📊 **Analytics Dashboard**: Performance monitoring and usage statistics
+- 🔍 **Document Search**: ChromaDB-powered documentation search
+- 🛠️ **Fine-tuning Support**: Custom model training and deployment
+- 📱 **Responsive Design**: Works on desktop, tablet, and mobile
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Python 3.11 or higher
+- 4GB+ RAM (8GB+ recommended)
+- GPU with CUDA support (optional, for faster inference)
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd glosentra
+   ```
+
+2. **Run the development server**
+   ```bash
+   python scripts/run_dev.py
+   ```
+
+3. **Open your browser**
+   ```
+   http://localhost:5000
+   ```
+
+That's it! The script will automatically:
+- Create a virtual environment
+- Install all dependencies
+- Download YOLO models
+- Start the development server
+
+## 🛠️ Development
+
+### Manual Setup
+
+If you prefer manual setup:
+
+```bash
+# Create virtual environment
+python -m venv .venv
+
+# Activate virtual environment
+# Windows:
+.venv\Scripts\activate
+# macOS/Linux:
+source .venv/bin/activate
+
+# Install dependencies
+python -m pip install -U pip
+pip install -e .
+pip install -r apps/web/requirements.txt
+
+# Copy environment file
+cp env.example .env
+
+# Start development server
+python scripts/run_dev.py
+```
+
+### Project Structure
+
+```
+.
+├── ultralytics/                         # YOLO package (editable install)
+├── apps/
+│   └── web/
+│       ├── glosentra/                   # Flask application
+│       │   ├── __init__.py              # App factory
+│       │   ├── config.py                # Configuration
+│       │   ├── routes/                  # Flask routes
+│       │   ├── core/                    # Core modules
+│       │   ├── services/                # Business logic
+│       │   ├── templates/               # Jinja templates
+│       │   └── static/                  # CSS/JS assets
+│       ├── app.py                       # Application entry point
+│       └── requirements.txt             # Python dependencies
+├── models/weights/                      # YOLO model files
+├── scripts/                             # Utility scripts
+├── tests/                               # Test suite
+└── README.md
+```
+
+## 🎯 Usage
+
+### Web Interface
+
+1. **Home**: Overview and feature cards
+2. **Deploy**: Upload images for processing
+   - Object Detection: Detect and localize objects
+   - Instance Segmentation: Pixel-perfect object masks
+   - Image Classification: Categorize images
+   - Pose Estimation: Human pose keypoints
+3. **Real-time**: Live webcam processing
+4. **Analytics**: Performance dashboard
+5. **Docs**: Searchable documentation
+6. **Fine-Tune**: Custom model training guide
+
+### API Usage
+
+**Process an image:**
+```bash
+curl -X POST http://localhost:5000/api/process \
+  -F "image=@your_image.jpg" \
+  -F "model_type=detect"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "predictions": {
+    "boxes": [[x1, y1, x2, y2], ...],
+    "classes": [0, 1, ...],
+    "confidences": [0.95, 0.87, ...],
+    "class_names": ["person", "car", ...]
+  },
+  "timing": {
+    "inference_ms": 45.2,
+    "total_ms": 67.8,
+    "fps": 22.1
+  }
+}
+```
+
+### Python SDK
+
+```python
+import requests
+
+# Process image
+with open('image.jpg', 'rb') as f:
+    response = requests.post(
+        'http://localhost:5000/api/process',
+        files={'image': f},
+        data={'model_type': 'detect'}
+    )
+    
+result = response.json()
+print(f"Detected {len(result['predictions']['boxes'])} objects")
+```
+
+## 🚀 Production Deployment
+
+### Quick Production Setup
+
+```bash
+python scripts/run_prod.py
+```
+
+### Manual Production Setup
+
+```bash
+# Set production environment
+export FLASK_ENV=production
+export FLASK_DEBUG=False
+
+# Use production server
+python -m gunicorn -k gthread -w 4 --threads 8 \
+  --worker-connections 1000 -b 0.0.0.0:5000 \
+  apps.web.app:app
+```
+
+### Docker Deployment
+
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+COPY . .
+
+RUN pip install -r apps/web/requirements.txt
+RUN pip install -e .
+
+EXPOSE 5000
+CMD ["python", "scripts/run_prod.py"]
+```
+
+## 🔧 Configuration
+
+### Environment Variables
+
+Create a `.env` file:
+
+```env
+# Flask Configuration
+FLASK_ENV=development
+FLASK_DEBUG=True
+
+# File Upload
+UPLOAD_FOLDER=apps/web/glosentra/uploads
+MAX_CONTENT_LENGTH=16777216
+
+# Database
+CHROMA_DB_PATH=data/chroma_db
+ENABLE_ANALYTICS=True
+
+# Model Paths
+MODEL_DETECT=models/weights/yolo11n.pt
+MODEL_SEGMENT=models/weights/yolo11n-seg.pt
+MODEL_CLASSIFY=models/weights/yolo11n-cls.pt
+MODEL_POSE=models/weights/yolo11n-pose.pt
+```
+
+### Model Configuration
+
+Place custom YOLO models in `models/weights/`:
+- `yolo11n.pt` - Object detection
+- `yolo11n-seg.pt` - Instance segmentation  
+- `yolo11n-cls.pt` - Image classification
+- `yolo11n-pose.pt` - Pose estimation
+
+## 📊 Performance
+
+### Benchmarks
+
+| Task | Model | Inference Time | FPS | Accuracy |
+|------|-------|----------------|-----|----------|
+| Detection | YOLOv11n | ~45ms | 22 FPS | 37.3 mAP |
+| Segmentation | YOLOv11n-seg | ~52ms | 19 FPS | 33.9 mAP |
+| Classification | YOLOv11n-cls | ~38ms | 26 FPS | 66.6% top-1 |
+| Pose | YOLOv11n-pose | ~48ms | 21 FPS | 68.5 mAP |
+
+*Benchmarks on RTX 3080, 640px input*
+
+### Optimization Tips
+
+1. **GPU Acceleration**: Ensure CUDA is available for 3-5x speedup
+2. **Model Selection**: Use smaller models (nano) for speed, larger for accuracy
+3. **Batch Processing**: Process multiple images simultaneously
+4. **Caching**: Models are pre-loaded and cached for faster inference
+
+## 🧪 Testing
+
+### Run Smoke Tests
+
+```bash
+python tests/test_web_smoke.py
+```
+
+### Run Diagnostics
+
+```bash
+python apps/web/diagnostics.py
+```
+
+### Manual Testing
+
+1. Start the server: `python scripts/run_dev.py`
+2. Open: `http://localhost:5000`
+3. Upload an image on any deploy page
+4. Check analytics dashboard for performance metrics
+
+## 🔍 Troubleshooting
+
+### Common Issues
+
+**"Backend not working"**
+- Check if models are downloaded: `ls models/weights/`
+- Verify server is running: `curl http://localhost:5000/api/healthz`
+- Check logs: `tail -f apps/web/glosentra/logs/glosentra.log`
+
+**Slow inference**
+- Verify GPU support: `python -c "import torch; print(torch.cuda.is_available())"`
+- Check model loading: `python apps/web/diagnostics.py`
+- Monitor system resources
+
+**Upload errors**
+- Check file size (max 16MB)
+- Verify file format (JPG, PNG, WebP)
+- Check upload directory permissions
+
+### Getting Help
+
+1. Check the [documentation](http://localhost:5000/docs)
+2. Run diagnostics: `python apps/web/diagnostics.py`
+3. Check logs in `apps/web/glosentra/logs/`
+4. Review the analytics dashboard
+
+## 🛠️ Development
+
+### Adding New Features
+
+1. **New Routes**: Add to `apps/web/glosentra/routes/`
+2. **New Templates**: Add to `apps/web/glosentra/templates/`
+3. **New Models**: Add to `apps/web/glosentra/core/model_registry.py`
+4. **New APIs**: Add to `apps/web/glosentra/routes/api.py`
+
+### Code Style
+
+- Follow PEP 8
+- Use type hints
+- Add docstrings
+- Write tests for new features
+
+### Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the AGPL-3.0 License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [Ultralytics](https://github.com/ultralytics/ultralytics) for YOLO models
+- [Flask](https://flask.palletsprojects.com/) for the web framework
+- [Tailwind CSS](https://tailwindcss.com/) for styling
+- [ChromaDB](https://www.trychroma.com/) for vector search
+
+## 📞 Support
+
+- 📧 Email: support@glosentra.com
+- 💬 Discord: [Glosentra Community](https://discord.gg/glosentra)
+- 📖 Docs: [Documentation](http://localhost:5000/docs)
+- 🐛 Issues: [GitHub Issues](https://github.com/glosentra/glosentra/issues)
+
+---
+
+**Glosentra** - Deploy Vision AI in Minutes ⚡

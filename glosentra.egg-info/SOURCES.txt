@@ -1,0 +1,8 @@
+README.md
+pyproject.toml
+glosentra.egg-info/PKG-INFO
+glosentra.egg-info/SOURCES.txt
+glosentra.egg-info/dependency_links.txt
+glosentra.egg-info/requires.txt
+glosentra.egg-info/top_level.txt
+tests/test_web_smoke.py
